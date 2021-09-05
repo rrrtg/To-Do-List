@@ -5,16 +5,21 @@ import TodoList from './components/TodoList/TodoList'
 import TodoInput from './components/TodoInput/TodoInput'
 
 
+
 const todos = Array(7).fill(null).map((mes, i) => ({
   id: i + 1,
   title: '待办事项' + (i + 1),
   completed: false
 }))
 
-export default class App extends Component {
+let storage = window.localStorage
+if (!storage.todos) {
+  storage.setItem("todos", JSON.stringify(todos))
+}
 
+export default class App extends Component {
   state = {
-    todos
+    todos: JSON.parse(storage.todos)
   }
 
   // 删除待办事项
@@ -40,7 +45,7 @@ export default class App extends Component {
 
   // 添加待办事件
   addTodoItem = title => {
-    let length = this.state.todos.length + 1
+    let length = this.state.todos.slice(-1)[0].id + 1
     this.setState({
       todos: [
         ...this.state.todos,
@@ -67,7 +72,16 @@ export default class App extends Component {
     })
   }
 
+  // 数据监听
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.todos !== this.state.todos) {
+      console.log('数据变化了')
+      storage.todos = JSON.stringify(this.state.todos)
+    }
+  }
+
   render() {
+    console.log(this.props, this.state.todos)
     return (
       <TodoProvider value={{
         todos: this.state.todos,
